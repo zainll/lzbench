@@ -10,6 +10,7 @@ vpath wflz/wfLZ.h $(SOURCE_PATH)
 
 #BUILD_ARCH = 32-bit
 #BUILD_STATIC = 1
+BUILD_ARCH = aarch64
 
 ifeq ($(BUILD_ARCH),32-bit)
 	CODE_FLAGS += -m32
@@ -17,7 +18,9 @@ ifeq ($(BUILD_ARCH),32-bit)
 	DONT_BUILD_LZSSE ?= 1
 endif
 
-CC?=gcc
+#CC?=gcc
+CC=aarch64-linux-android31-clang
+CXX=aarch64-linux-android31-clang++
 
 COMPILER = $(shell $(CC) -v 2>&1 | grep -q "clang version" && echo clang || echo gcc)
 GCC_VERSION = $(shell echo | $(CC) -dM -E - | grep __VERSION__  | sed -e 's:\#define __VERSION__ "\([0-9.]*\).*:\1:' -e 's:\.\([0-9][0-9]\):\1:g' -e 's:\.\([0-9]\):0\1:g')
@@ -29,7 +32,8 @@ ifeq (1,$(filter 1,$(shell [ "$(COMPILER)" = "gcc" ] && expr $(GCC_VERSION) \< 4
 endif
 
 # LZSSE requires compiler with __SSE4_1__ support and 64-bit CPU
-ifneq ($(shell echo|$(CC) -dM -E - -march=native|egrep -c '__(SSE4_1|x86_64)__'), 2)
+#ifneq ($(shell echo|$(CC) -dM -E - -march=native|egrep -c '__(SSE4_1|x86_64)__'), 2)
+ifneq ($(shell echo|$(CC) -dM -E - |egrep -c '__(SSE4_1|x86_64)__'), 2)
     DONT_BUILD_LZSSE ?= 1
 endif
 
@@ -61,7 +65,8 @@ else
 		DONT_BUILD_CSC ?= 1
 	endif
 
-	LDFLAGS	+= -pthread -lrt
+# LDFLAGS	+= -pthread -lrt
+	LDFLAGS	+= -pthread
 
 	ifeq ($(BUILD_STATIC),1)
 		LDFLAGS	+= -lrt -static
